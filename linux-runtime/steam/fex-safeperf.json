@@ -1,0 +1,20 @@
+{
+  "Config": {
+    "ProfileStats": "0",
+    "SilentLog": "1",
+    "X87ReducedPrecision": "1",
+    "TSOEnabled": "1",
+    "VectorTSOEnabled": "0",
+    "MemcpySetTSOEnabled": "0",
+    "HalfBarrierTSOEnabled": "1",
+    "StrictInProcessSplitLocks": "0",
+    "KernelUnalignedAtomicBackpatching": "1",
+    "VolatileMetadata": "1",
+    "MaxInst": "5000",
+    "Multiblock": "1",
+    "DisableL2Cache": "0",
+    "DynamicL1Cache": "0",
+    "CacheObjectCodeCompilation": "2"
+  },
+  "ThunksDB": {}
+}

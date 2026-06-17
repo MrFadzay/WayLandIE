@@ -1,0 +1,54 @@
+# Android build output
+android-app/out/
+android-app/obj/
+android-app/*.apk
+android-app/*.aab
+android-app/*.idsig
+android-app/*.keystore
+android-app/*.jks
+
+# Local driver and runtime blobs
+local-bundles/
+*.steam-bundle.*
+waylandie-steam-arm64-bundle-*/
+waylandie-steam-arm64-bundle*.tar.gz
+*.deb
+*.rpm
+*.apk
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.tar.xz
+*.7z
+*.rar
+*.so
+*.so.*
+*.dll
+*.exe
+
+# Steam, Proton, and game data
+steamapps/
+compatdata/
+shadercache/
+Proton*/
+dxvk-slot-*/
+turnip-slot-*/
+qcom-adreno-*/
+
+# Logs and generated profile state
+*.log
+*.trace
+*.tmp
+__pycache__/
+*.pyc
+.cache/
+.profiles/
+waylandie-*-logs/
+
+# Editor noise
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini
