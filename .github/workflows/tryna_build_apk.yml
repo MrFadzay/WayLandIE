@@ -17,37 +17,48 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # Install NDK along with the Android 36 SDK components
       - name: Install Android NDK via SDKManager
         shell: cmd
         run: |
           echo y| "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "ndk;26.1.10909125" "build-tools;36.1.0" "platforms;android-36"
 
-      # Patching the codebase to force compile as C++ to support SurfaceControl API
-      - name: Patch Native Code for C++ Compilation
+      # Patches the build environment for modern SurfaceControl compatibility
+      - name: Patch Native Code and Build Script
         shell: pwsh
         run: |
           $nativeDir = "android-app/native"
           $scriptPath = "android-app/tools/build-apk.ps1"
           
-          # 1. Rename the C file to a C++ extension if it exists
+          # 1. Force C++ compiler mode by renaming the source file
           if (Test-Path "$nativeDir/waylandie_display_native.c") {
               Rename-Item -Path "$nativeDir/waylandie_display_native.c" -NewName "waylandie_display_native.cpp"
               Write-Host "Renamed native file to .cpp"
           }
           
-          # 2. Update the build script to target the new .cpp extension instead of .c
+          # 2. Update script references to target the new .cpp file name
           if (Test-Path $scriptPath) {
               (Get-Content $scriptPath) -replace 'waylandie_display_native\.c', 'waylandie_display_native.cpp' | Set-Content $scriptPath
-              Write-Host "Patched build script references."
+              Write-Host "Patched build script source reference."
+          }
+          
+          # 3. Force the compiler to use API Level 31+ so it can see surface_control_jni.h
+          if (Test-Path $scriptPath) {
+              # Matches common NDK compiler target strings like android-21 or android-24 and bumps them to android-31
+              (Get-Content $scriptPath) -replace '-target\s+[a-zA-Z0-9_-]+-android-\d+', '-target aarch64-linux-android-31' `
+                                        -replace 'android-21', 'android-31' `
+                                        -replace 'android-24', 'android-31' | Set-Content $scriptPath
+              Write-Host "Bumped NDK compiler target to Android API 31."
           }
 
+      # Executes the build with the corrected parameters
       - name: Build APK using PowerShell script
         shell: pwsh
         run: |
           $env:ANDROID_NDK_HOME = "$env:ANDROID_HOME\ndk\26.1.10909125"
           .\android-app\tools\build-apk.ps1 -SdkRoot $env:ANDROID_HOME -NdkRoot $env:ANDROID_NDK_HOME
 
-      # Copies the newly built APK into the runtime directory for seamless deployment
+      # Automatically packages everything into your mobile distribution bundle
       - name: Prepare Runtime Package
         shell: pwsh
         run: |
