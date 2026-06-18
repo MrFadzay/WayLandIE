@@ -24,5 +24,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WayLandIE-APK
-          path: out/waylandie-display-mv
-          p.apk
+          path: out/waylandie-display-mvp.apk
