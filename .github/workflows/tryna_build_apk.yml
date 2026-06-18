@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Waylandie Android APK
 
 on:
   workflow_dispatch:
@@ -9,17 +9,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # Installs the missing build-tools version required by your script
-      - name: Setup Android SDK & Build-Tools
-        uses: android-actions/setup-android@v3
-        with:
-          build-tools: "36.1.0"
-      
-      - name: Set up Android NDK
+      - name: Install Android Build Tools and Platform
+        shell: pwsh
         run: |
-          # The script looks for NDK r29 or similar; Windows runners have the SDK pre-installed.
-          echo "Using pre-installed SDK"
-
+          # Install both the required build-tools (36.1.0) and the Android 36 platform
+          & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" "build-tools;36.1.0" "platforms;android-36"
+          
       - name: Build APK using PowerShell script
         shell: pwsh
         run: |
@@ -30,4 +25,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WayLandIE-APK
-          path: out/waylandie-display-mvp.apk
+          path: android-app/out/waylandie-display-mvp.apk
