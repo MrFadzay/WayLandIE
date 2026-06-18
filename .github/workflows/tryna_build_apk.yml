@@ -1,4 +1,4 @@
-name: Build WayLandie Android APK
+name: Build WayLandie Android APK and Runtime
 
 on:
   workflow_dispatch:
@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,21 +17,30 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android Build Tools and Platform
+      # Downloads the exact side-by-side NDK necessary for compilation
+      - name: Install Android NDK via SDKManager
         shell: cmd
         run: |
-          :: Accept SDK licenses automatically and install exact versions required by the script
-          echo y| "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "build-tools;36.1.0" "platforms;android-36"
+          echo y| "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "ndk;26.1.10909125" "build-tools;36.1.0" "platforms;android-36"
 
+      # Compiles the native dependencies and packages the APK 
       - name: Build APK using PowerShell script
         shell: pwsh
         run: |
-          cd android-app
-          # We MUST pass -SdkRoot here because the script defaults to LOCALAPPDATA
-          .\tools\build-apk.ps1 -SdkRoot $env:ANDROID_HOME
+          $env:ANDROID_NDK_HOME = "$env:ANDROID_HOME\ndk\26.1.10909125"
+          .\android-app\tools\build-apk.ps1 -SdkRoot $env:ANDROID_HOME -NdkRoot $env:ANDROID_NDK_HOME
 
-      - name: Upload APK Artifact
+      # Copies the newly built APK into the runtime directory for seamless deployment
+      - name: Prepare Runtime Package
+        shell: pwsh
+        run: |
+          Copy-Item -Path "android-app/out/waylandie-display-mvp.apk" -Destination "linux-runtime/"
+          Compress-Archive -Path "linux-runtime/*" -DestinationPath "waylandie-full-bundle.zip"
+
+      # Uploads everything as one easy-to-download artifact
+      - name: Upload Complete Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: WayLandIE-APK
-          path: android-app/out/waylandie-display-mvp.apk
+          name: WayLandIE-Full-Distribution
+          path: waylandie-full-bu
+          ndle.zip
