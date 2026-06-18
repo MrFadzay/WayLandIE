@@ -1,0 +1,20 @@
+on: [workflow_dispatch]
+   jobs:
+     build:
+       runs-on: windows-latest
+       steps:
+         - uses: actions/checkout@v4
+         - name: Set up Android NDK
+           run: |
+             # The script looks for NDK r29 or similar; Windows runners have the SDK pre-installed.
+             echo "Using pre-installed SDK"
+         - name: Build APK using PowerShell script
+           shell: pwsh
+           run: |
+             cd android-app
+             .\tools\build-apk.ps1
+         - name: Upload APK Artifact
+           uses: actions/upload-artifact@v4
+           with:
+             name: WayLandIE-APK
+             path: out/waylandie-display-mvp.apk
