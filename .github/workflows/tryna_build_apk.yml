@@ -26,10 +26,6 @@ jobs:
       - name: Build APK using PowerShell script
         shell: pwsh
         env:
-          # Crucial: This intercepts the compilation pass and forces clean C++17 processing
-          # which completely bypasses the 5 surface_control.h syntax header errors.
-          CC: "clang -x c++"
-          CFLAGS: "-std=c++17"
           # Explicitly declares the installed r29 engine path for the script parameters
           ANDROID_NDK_ROOT: "C:\\Android\\android-sdk\\ndk\\29.0.14206865"
         run: |
