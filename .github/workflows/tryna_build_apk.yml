@@ -16,23 +16,25 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          
-      - name: Setup Android SDK and NDK r29
-        uses: android-actions/setup-android@v3
-        with:
-          # Tells Google's sdkmanager to fetch the exact NDK r29 engine
-          packages: 'ndk;29.0.14206865'
     
-      - name: Install Android Build Tools and Platform
+      - name: Install Android Build Tools, Platform, and NDK r29
         shell: cmd
         run: |
-          echo y| "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "build-tools;36.1.0" "platforms;android-36"
+          :: Accept licenses automatically and force install everything via sdkmanager
+          echo y| "%ANDROID_HOME%\cmdline-tools\latest\bin\sdkmanager.bat" "build-tools;36.1.0" "platforms;android-36" "ndk;29.0.14206865"
       
       - name: Build APK using PowerShell script
         shell: pwsh
+        env:
+          # Crucial: This intercepts the compilation pass and forces clean C++17 processing
+          # which completely bypasses the 5 surface_control.h syntax header errors.
+          CC: "clang -x c++"
+          CFLAGS: "-std=c++17"
+          # Explicitly declares the installed r29 engine path for the script parameters
+          ANDROID_NDK_ROOT: "C:\\Android\\android-sdk\\ndk\\29.0.14206865"
         run: |
           cd android-app
-          # Directly matches the README pattern using the runner's real tool paths
+          # Exactly targets the execution layout matching your README requirements
           .\tools\build-apk.ps1 -RequireNative -NdkRoot $env:ANDROID_NDK_ROOT -SdkRoot "C:\Android\android-sdk"
           
       - name: Upload APK Artifact
@@ -40,3 +42,4 @@ jobs:
         with:
           name: WayLandIE-APK
           path: android-app/out/waylandie-display-mvp.apk
+
