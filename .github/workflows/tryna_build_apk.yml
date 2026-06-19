@@ -30,17 +30,21 @@ jobs:
           cd android-app
           .\tools\build-apk.ps1 -RequireNative -NdkRoot $env:ANDROID_NDK_ROOT -SdkRoot "C:\Android\android-sdk"
 
-      - name: Bundle Linux Runtime scripts
+      - name: Bundle Everything into One Zip
         shell: pwsh
         run: |
-          # Compress the linux-runtime directory into a zip archive for phone deployment
-          Compress-Archive -Path linux-runtime -DestinationPath out/waylandie-linux-runtime.zip
+          # 1. Create the missing output folder at the repository root
+          New-Item -ItemType Directory -Force out
+          
+          # 2. Copy the finished Full GPU APK straight into your linux-runtime directory
+          # This packages everything into a single, easy file for your phone.
+          Copy-Item -Path android-app/out/waylandie-display-mvp.apk -Destination linux-runtime/
+          
+          # 3. Zip the entire runtime folder together
+          Compress-Archive -Path linux-runtime -DestinationPath out/waylandie-release-bundle.zip
 
-      - name: Upload Build Artifacts
+      - name: Upload Single Release Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: WayLandIE-Release-Bundle
-          path: |
-            android-app/out/waylandie-display-mvp.apk
-            out/waylandie-linux-runtime.zip
-            
+          name: WayLandIE-Phone-Bundle
+          path: out/waylandie-release-bundle.zip
